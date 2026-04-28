@@ -1,41 +1,27 @@
 # KPI Autoresearch Codex Toolkit
 
-This repository implements a **Codex + MCP workflow** inspired by Karpathy's autoresearch loop:
+This repo is a practical **Codex + MCP + Computer Use** setup for recursive KPI improvement in any codebase.
 
-1. Ask users key KPI discovery questions based on the codebase.
-2. Maintain a KPI dashboard with history.
-3. Generate methodical subagent plans to improve lagging KPIs.
+## Target flow
 
-## What's included
+1. **User runs setup in a repo** and defines KPI profile (direction, baseline, target, weight).
+2. **Dashboard opens** with KPI history and targets.
+3. **Codex iterates** with subagent plans, updating KPI snapshots each cycle.
 
-- `mcp_server/server.py` — lightweight MCP server (stdio) with tools for KPI interview, KPI updates, dashboard rendering, and subagent planning.
-- `dashboard/` — static dashboard UI that reads `dashboard/data.json`.
-- `subagents/` — reusable subagent playbooks for product, growth, and reliability KPI improvements.
-- `scripts/run_recursive_cycle.py` — recursive loop runner to track KPI deltas and auto-generate next iteration plans.
-- `.codex/config.toml` — sample Codex MCP wiring for this server.
+## Components
 
-## Quick start
+- `mcp_server/server.py`: MCP stdio server with tools for KPI interview, profile save, snapshots, subagent planning, and dashboard rendering.
+- `scripts/use_in_repo.py`: one-command onboarding flow for a repository.
+- `scripts/run_recursive_cycle.py`: one iteration update from latest KPI measurements.
+- `dashboard/`: static dashboard UI.
+- `subagents/`: role playbooks for iterative execution.
+- `.codex/config.toml`: Codex MCP wiring (local + OpenAI docs MCP).
 
-```bash
-python3 mcp_server/server.py --help
-python3 scripts/run_recursive_cycle.py --help
-python3 scripts/run_recursive_cycle.py \
-  --kpi conversion_rate=0.032 \
-  --kpi p95_latency_ms=780 \
-  --kpi retention_d7=0.21
-```
+## Setup in a repo
 
-Then open:
+### 1) Configure MCP in Codex
 
-```bash
-python3 -m http.server 8000 --directory dashboard
-```
-
-and visit `http://localhost:8000`.
-
-## Codex MCP setup
-
-Add this to your Codex config (already included as `.codex/config.toml`):
+`.codex/config.toml` already includes:
 
 ```toml
 [mcp_servers.kpiAutoresearch]
@@ -43,11 +29,50 @@ command = "python3"
 args = ["mcp_server/server.py"]
 ```
 
-## Suggested Codex prompt
+### 2) Run initial onboarding
 
-"Use the `kpiAutoresearch` MCP server to:
-- run KPI interview questions,
-- initialize KPI snapshots,
-- render dashboard,
-- and produce 3 subagent task plans for the weakest KPI.
-Then start the first iteration."
+```bash
+python3 scripts/use_in_repo.py \
+  --north-star "Increase qualified trial-to-paid conversion" \
+  --kpi conversion_rate:maximize:0.031:0.055:1.5 \
+  --kpi retention_d7:maximize:0.22:0.30:1.2 \
+  --kpi p95_latency_ms:minimize:712:450:1.0 \
+  --snapshot conversion_rate=0.031 \
+  --snapshot retention_d7=0.22 \
+  --snapshot p95_latency_ms=712 \
+  --notes "baseline"
+```
+
+This writes:
+- `data/kpi_profile.json`
+- `data/kpi_history.json`
+- `data/iteration_plan.md`
+- `dashboard/data.json`
+
+### 3) Open dashboard
+
+```bash
+python3 -m http.server 8765 --directory dashboard
+```
+
+Visit `http://localhost:8765`.
+
+### 4) Run iterative loop
+
+After each engineering iteration and fresh measurements:
+
+```bash
+python3 scripts/run_recursive_cycle.py \
+  --kpi conversion_rate=0.034 \
+  --kpi retention_d7=0.235 \
+  --kpi p95_latency_ms=680 \
+  --notes "iteration-1"
+```
+
+## Using `@Computer Use` in Codex
+
+Use this prompt in Codex:
+
+> `@Computer Use Keep http://localhost:8765 open and visible while we run KPI iterations. After each code change, read KPI cards/trends, then ask me for the next KPI snapshot values and call kpiAutoresearch MCP tools to refresh the plan.`
+
+This keeps the dashboard in view while Codex recursively improves the most off-target KPI.

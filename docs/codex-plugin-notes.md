@@ -1,25 +1,23 @@
-# Codex plugin vs MCP design notes
+# Codex plugin/MCP setup notes
 
-This project uses an MCP-first architecture so it works across Codex CLI/IDE/web surfaces with a single server.
+This implementation is MCP-first because Codex natively connects to MCP servers in CLI/IDE/web contexts.
 
-## Why MCP-first
+## Why this is closer to a “real plugin” setup
 
-- OpenAI provides first-class MCP integration in Codex configuration.
-- The public OpenAI Docs MCP can be configured alongside custom servers.
-- Tooling here uses local JSON-RPC stdio to keep setup light.
+A practical Codex plugin can be represented as:
+- MCP servers (tooling)
+- skills/subagent instructions
+- app integrations (e.g., Computer Use view loop)
 
-## Plugin mapping
+This repository now includes all three:
+- MCP server: `mcp_server/server.py`
+- subagent playbooks: `subagents/*.md`
+- Computer Use operating prompt in `README.md` and generated `data/iteration_plan.md`
 
-Per current Codex guidance, plugins can bundle:
+## Computer Use
 
-- skills,
-- app integrations,
-- MCP server configuration.
-
-This repo currently provides:
-
-- MCP server (`mcp_server/server.py`)
-- subagent playbooks (`subagents/*.md`)
-- Codex config sample (`.codex/config.toml`)
-
-You can package these into your org's plugin distribution process once available in your workspace.
+Computer Use is configured in Codex at runtime by tagging `@Computer Use` in prompts.
+This repo’s role is to provide:
+- dashboard URL
+- iteration plan
+- MCP tools Codex can call between UI observations and code changes.

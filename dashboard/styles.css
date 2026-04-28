@@ -25,3 +25,5 @@ main {
 .value { font-size: 1.4rem; font-weight: 700; }
 .delta-pos { color: #49d17f; }
 .delta-neg { color: #ff7d7d; }
+
+.target { color: #c9d5f5; font-size: 0.9rem; }

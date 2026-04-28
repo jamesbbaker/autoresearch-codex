@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run one KPI autoresearch iteration and emit next-step subagent briefs."""
+"""Run one recursive KPI iteration from measured KPI values."""
 
 from __future__ import annotations
 
@@ -42,15 +42,15 @@ def main() -> None:
     args = parser.parse_args()
 
     kpis = parse_kpis(args.kpi)
-    snap = call_tool("update_kpi_snapshot", {"kpis": kpis, "notes": args.notes})
-    plan = call_tool("generate_subagent_plan", {"direction": "maximize"})
+    _ = call_tool("update_kpi_snapshot", {"kpis": kpis, "notes": args.notes})
+    plan = call_tool("generate_subagent_plan", {})
     _ = call_tool("render_dashboard", {})
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(plan, indent=2))
 
-    print("Snapshot saved:", snap["history_path"])
-    print("Weakest KPI:", plan["weakest_kpi"])
+    print("Focus KPI:", plan["focus_kpi"])
+    print("Direction:", plan["focus_direction"])
     print("Subagent briefs written to:", OUT.relative_to(ROOT))
 
 

@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 """KPI Autoresearch MCP server (stdio JSON-RPC).
 
-Implements a compact subset of MCP methods:
-- initialize
-- tools/list
-- tools/call
+Tools:
+- kpi_interview_questions
+- save_kpi_profile
+- update_kpi_snapshot
+- generate_subagent_plan
+- render_dashboard
 """
 
 from __future__ import annotations
@@ -20,6 +22,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT / "data"
 HISTORY_PATH = DATA_DIR / "kpi_history.json"
+PROFILE_PATH = DATA_DIR / "kpi_profile.json"
 DASHBOARD_DIR = ROOT / "dashboard"
 DASHBOARD_DATA_PATH = DASHBOARD_DIR / "data.json"
 
@@ -35,15 +38,23 @@ def utc_now_iso() -> str:
     return dt.datetime.now(dt.timezone.utc).isoformat()
 
 
+def load_json(path: Path, default: Any) -> Any:
+    if not path.exists():
+        return default
+    return json.loads(path.read_text())
+
+
+def save_json(path: Path, value: Any) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(value, indent=2))
+
+
 def load_history() -> list[dict[str, Any]]:
-    if not HISTORY_PATH.exists():
-        return []
-    return json.loads(HISTORY_PATH.read_text())
+    return load_json(HISTORY_PATH, [])
 
 
-def save_history(history: list[dict[str, Any]]) -> None:
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
-    HISTORY_PATH.write_text(json.dumps(history, indent=2))
+def load_profile() -> dict[str, Any]:
+    return load_json(PROFILE_PATH, {"kpis": {}, "loop_cadence": "daily"})
 
 
 def language_breakdown(max_files: int = 2000) -> dict[str, int]:
@@ -78,32 +89,58 @@ def language_breakdown(max_files: int = 2000) -> dict[str, int]:
 def tool_kpi_interview_questions(arguments: dict[str, Any]) -> dict[str, Any]:
     product_goal = arguments.get("product_goal", "Improve user outcomes and business growth")
     current_stage = arguments.get("company_stage", "early-growth")
-    langs = language_breakdown()
     return {
         "generated_at": utc_now_iso(),
         "context": {
             "product_goal": product_goal,
             "company_stage": current_stage,
-            "codebase_languages": langs,
+            "codebase_languages": language_breakdown(),
         },
         "questions": [
-            "What is your single North Star metric for the next 90 days?",
-            "Which 3 leading indicators most strongly predict the North Star in your business model?",
-            "What is your current baseline for each KPI, and what target do you want by date?",
-            "Which user segment matters most for this quarter (new users, activated users, retained users, revenue users)?",
-            "What constraints must optimization respect (latency, reliability, budget, trust/safety, compliance)?",
-            "Which KPI can improve fastest with engineering effort in the next two weeks?",
-            "What instrumentation gaps prevent reliable KPI attribution today?",
-            "Which regressions are unacceptable (guardrail metrics and hard thresholds)?",
-            "How frequently should Codex run this loop (daily/weekly), and who approves high-impact changes?",
+            "What is your North Star KPI for the next 90 days?",
+            "Which KPIs should be maximized vs minimized?",
+            "What are the current baseline and 30/60/90-day targets for each KPI?",
+            "Which user segment is highest priority for KPI improvement?",
+            "What guardrail KPIs must never regress?",
+            "What instrumentation gaps currently make KPI attribution unreliable?",
+            "How often should Codex run this recursive loop?",
+            "Which KPI should trigger automatic focus if it drifts beyond threshold?",
         ],
     }
+
+
+def tool_save_kpi_profile(arguments: dict[str, Any]) -> dict[str, Any]:
+    kpis = arguments.get("kpis", {})
+    if not isinstance(kpis, dict) or not kpis:
+        raise ValueError("kpis must be a non-empty object")
+
+    normalized: dict[str, Any] = {}
+    for name, spec in kpis.items():
+        direction = spec.get("direction", "maximize")
+        if direction not in {"maximize", "minimize"}:
+            raise ValueError(f"Invalid direction for {name}: {direction}")
+        normalized[name] = {
+            "direction": direction,
+            "baseline": float(spec.get("baseline", 0.0)),
+            "target": float(spec.get("target", spec.get("baseline", 0.0))),
+            "weight": float(spec.get("weight", 1.0)),
+        }
+
+    profile = {
+        "updated_at": utc_now_iso(),
+        "loop_cadence": arguments.get("loop_cadence", "daily"),
+        "north_star": arguments.get("north_star", ""),
+        "kpis": normalized,
+    }
+    save_json(PROFILE_PATH, profile)
+    return {"ok": True, "profile_path": str(PROFILE_PATH.relative_to(ROOT)), "profile": profile}
 
 
 def tool_update_kpi_snapshot(arguments: dict[str, Any]) -> dict[str, Any]:
     kpis = arguments.get("kpis", {})
     if not isinstance(kpis, dict) or not kpis:
         raise ValueError("kpis must be a non-empty object mapping KPI name -> numeric value")
+
     snapshot = {
         "timestamp": utc_now_iso(),
         "kpis": {k: float(v) for k, v in kpis.items()},
@@ -111,86 +148,104 @@ def tool_update_kpi_snapshot(arguments: dict[str, Any]) -> dict[str, Any]:
     }
     history = load_history()
     history.append(snapshot)
-    save_history(history)
-    return {
-        "ok": True,
-        "history_points": len(history),
-        "latest": snapshot,
-        "history_path": str(HISTORY_PATH.relative_to(ROOT)),
-    }
+    save_json(HISTORY_PATH, history)
+    return {"ok": True, "history_points": len(history), "latest": snapshot}
 
 
-def kpi_delta_summary(history: list[dict[str, Any]]) -> dict[str, Any]:
+def kpi_delta(history: list[dict[str, Any]], kpi: str) -> float | None:
     if len(history) < 2:
-        return {"message": "Need at least two snapshots to compute deltas."}
-    prev = history[-2]["kpis"]
-    curr = history[-1]["kpis"]
-    deltas = {}
-    for k, v in curr.items():
-        old = prev.get(k)
-        deltas[k] = None if old is None else v - old
-    return deltas
+        return None
+    prev = history[-2]["kpis"].get(kpi)
+    curr = history[-1]["kpis"].get(kpi)
+    if prev is None or curr is None:
+        return None
+    return curr - prev
+
+
+def score_kpi(name: str, latest: float, spec: dict[str, Any]) -> float:
+    target = float(spec.get("target", latest))
+    direction = spec.get("direction", "maximize")
+    weight = float(spec.get("weight", 1.0))
+    gap = (target - latest) if direction == "maximize" else (latest - target)
+    return gap * weight
 
 
 def tool_generate_subagent_plan(arguments: dict[str, Any]) -> dict[str, Any]:
     history = load_history()
     if not history:
         raise ValueError("No KPI history found. Call update_kpi_snapshot first.")
+
     latest = history[-1]["kpis"]
-    optimization_direction = arguments.get("direction", "maximize")
-    weakest_kpi = sorted(latest.items(), key=lambda kv: kv[1])[0][0]
+    profile = load_profile()
+    prof_kpis = profile.get("kpis", {})
+
+    scored = []
+    for name, value in latest.items():
+        spec = prof_kpis.get(name, {"direction": "maximize", "target": value, "weight": 1.0})
+        scored.append((name, score_kpi(name, float(value), spec), spec))
+
+    scored.sort(key=lambda row: row[1], reverse=True)
+    focus_kpi, focus_score, focus_spec = scored[0]
+    direction = focus_spec.get("direction", "maximize")
 
     plans = [
         {
             "agent": "instrumentation-auditor",
-            "objective": f"Improve signal quality for {weakest_kpi}",
+            "objective": f"Increase measurement confidence for {focus_kpi}",
             "method": [
-                "Audit event coverage, missing joins, and KPI definitions.",
-                "Add tests for metric pipeline consistency.",
-                "Ship observability panel for KPI decomposition.",
+                "Validate KPI event pipeline end-to-end.",
+                "Add attribution tests and anomaly checks.",
+                "Publish a KPI decomposition view for diagnosis.",
             ],
-            "deliverable": "PR with metric definitions + validation checks",
+            "deliverable": "PR with telemetry + automated KPI checks",
         },
         {
-            "agent": "growth-experimenter",
-            "objective": f"Design 2 experiments to {optimization_direction} {weakest_kpi}",
+            "agent": "product-experimenter",
+            "objective": f"Design and ship 2 small experiments to {direction} {focus_kpi}",
             "method": [
-                "Generate hypotheses tied to activation funnel stages.",
-                "Implement smallest reversible product change.",
-                "Define guardrails and stop conditions before rollout.",
+                "Choose one funnel bottleneck and define hypotheses.",
+                "Implement a reversible change behind a flag.",
+                "Track guardrails and decision thresholds.",
             ],
-            "deliverable": "Experiment plan + implementation PR",
+            "deliverable": "Experiment brief + implementation PR",
         },
         {
             "agent": "performance-optimizer",
-            "objective": "Reduce technical friction blocking conversion/retention",
+            "objective": "Remove latency/reliability blockers affecting top-line KPIs",
             "method": [
-                "Profile top user path latency and error rates.",
-                "Target p95 latency + failure hotspots.",
-                "Document before/after KPI impact with confidence notes.",
+                "Profile critical path and rank hotspots by user impact.",
+                "Fix one high-leverage bottleneck.",
+                "Measure before/after KPI movement with confidence notes.",
             ],
-            "deliverable": "Perf PR + KPI impact report",
+            "deliverable": "Performance PR + impact note",
         },
     ]
 
     return {
         "generated_at": utc_now_iso(),
-        "weakest_kpi": weakest_kpi,
+        "focus_kpi": focus_kpi,
+        "focus_score": focus_score,
+        "focus_direction": direction,
         "latest_kpis": latest,
-        "delta": kpi_delta_summary(history),
+        "deltas": {k: kpi_delta(history, k) for k in latest},
         "subagent_plans": plans,
     }
 
 
 def tool_render_dashboard(arguments: dict[str, Any]) -> dict[str, Any]:
     history = load_history()
-    DASHBOARD_DIR.mkdir(parents=True, exist_ok=True)
-    DASHBOARD_DATA_PATH.write_text(json.dumps({"history": history}, indent=2))
+    profile = load_profile()
+    payload = {
+        "profile": profile,
+        "history": history,
+        "updated_at": utc_now_iso(),
+    }
+    save_json(DASHBOARD_DATA_PATH, payload)
     return {
         "ok": True,
-        "history_points": len(history),
         "dashboard_data": str(DASHBOARD_DATA_PATH.relative_to(ROOT)),
         "dashboard_html": "dashboard/index.html",
+        "history_points": len(history),
     }
 
 
@@ -198,12 +253,19 @@ TOOLS = [
     {
         "name": "kpi_interview_questions",
         "description": "Generate KPI discovery questions based on repository context.",
+        "inputSchema": {"type": "object", "properties": {"product_goal": {"type": "string"}, "company_stage": {"type": "string"}}},
+    },
+    {
+        "name": "save_kpi_profile",
+        "description": "Persist KPI profile including direction, targets, and weights.",
         "inputSchema": {
             "type": "object",
             "properties": {
-                "product_goal": {"type": "string"},
-                "company_stage": {"type": "string"},
+                "north_star": {"type": "string"},
+                "loop_cadence": {"type": "string"},
+                "kpis": {"type": "object"},
             },
+            "required": ["kpis"],
         },
     },
     {
@@ -220,17 +282,12 @@ TOOLS = [
     },
     {
         "name": "generate_subagent_plan",
-        "description": "Create methodical subagent plans based on latest KPI state.",
-        "inputSchema": {
-            "type": "object",
-            "properties": {
-                "direction": {"type": "string", "enum": ["maximize", "minimize"]},
-            },
-        },
+        "description": "Create methodical subagent plans based on profile + latest KPI state.",
+        "inputSchema": {"type": "object", "properties": {}},
     },
     {
         "name": "render_dashboard",
-        "description": "Write dashboard/data.json from KPI history so the dashboard UI can render trends.",
+        "description": "Write dashboard/data.json from profile and KPI history.",
         "inputSchema": {"type": "object", "properties": {}},
     },
 ]
@@ -238,11 +295,7 @@ TOOLS = [
 
 def parse_request(line: str) -> JsonRpcRequest:
     payload = json.loads(line)
-    return JsonRpcRequest(
-        id=payload.get("id"),
-        method=payload.get("method", ""),
-        params=payload.get("params", {}),
-    )
+    return JsonRpcRequest(id=payload.get("id"), method=payload.get("method", ""), params=payload.get("params", {}))
 
 
 def write_response(id_val: Any, result: Any = None, error: str | None = None) -> None:
@@ -259,7 +312,7 @@ def handle(method: str, params: dict[str, Any]) -> Any:
     if method == "initialize":
         return {
             "protocolVersion": "2025-03-26",
-            "serverInfo": {"name": "kpi-autoresearch", "version": "0.1.0"},
+            "serverInfo": {"name": "kpi-autoresearch", "version": "0.2.0"},
             "capabilities": {"tools": {}},
         }
     if method == "tools/list":
@@ -267,16 +320,16 @@ def handle(method: str, params: dict[str, Any]) -> Any:
     if method == "tools/call":
         name = params.get("name")
         arguments = params.get("arguments", {})
-        if name == "kpi_interview_questions":
-            output = tool_kpi_interview_questions(arguments)
-        elif name == "update_kpi_snapshot":
-            output = tool_update_kpi_snapshot(arguments)
-        elif name == "generate_subagent_plan":
-            output = tool_generate_subagent_plan(arguments)
-        elif name == "render_dashboard":
-            output = tool_render_dashboard(arguments)
-        else:
+        handlers = {
+            "kpi_interview_questions": tool_kpi_interview_questions,
+            "save_kpi_profile": tool_save_kpi_profile,
+            "update_kpi_snapshot": tool_update_kpi_snapshot,
+            "generate_subagent_plan": tool_generate_subagent_plan,
+            "render_dashboard": tool_render_dashboard,
+        }
+        if name not in handlers:
             raise ValueError(f"Unknown tool: {name}")
+        output = handlers[name](arguments)
         return {"content": [{"type": "text", "text": json.dumps(output, indent=2)}]}
     raise ValueError(f"Unsupported method: {method}")
 
@@ -286,16 +339,13 @@ def run_stdio() -> None:
         line = raw.strip()
         if not line:
             continue
+        req_id = None
         try:
             req = parse_request(line)
+            req_id = req.id
             result = handle(req.method, req.params)
             write_response(req.id, result=result)
         except Exception as exc:  # noqa: BLE001
-            req_id = None
-            try:
-                req_id = json.loads(line).get("id")
-            except Exception:
-                pass
             write_response(req_id, error=str(exc))
 
 

@@ -16,5 +16,23 @@
       "p95_latency_ms": 680.0
     },
     "notes": "iteration-1"
+  },
+  {
+    "timestamp": "2026-04-28T03:48:24.273474+00:00",
+    "kpis": {
+      "conversion_rate": 0.031,
+      "retention_d7": 0.22,
+      "p95_latency_ms": 712.0
+    },
+    "notes": "baseline"
+  },
+  {
+    "timestamp": "2026-04-28T03:48:28.443191+00:00",
+    "kpis": {
+      "conversion_rate": 0.034,
+      "retention_d7": 0.235,
+      "p95_latency_ms": 680.0
+    },
+    "notes": "iteration-1"
   }
 ]
