@@ -1,0 +1,66 @@
+{
+  "profile": {
+    "updated_at": "2026-04-28T03:48:24.155101+00:00",
+    "loop_cadence": "daily",
+    "north_star": "Increase qualified trial-to-paid conversion",
+    "kpis": {
+      "conversion_rate": {
+        "direction": "maximize",
+        "baseline": 0.031,
+        "target": 0.055,
+        "weight": 1.5
+      },
+      "retention_d7": {
+        "direction": "maximize",
+        "baseline": 0.22,
+        "target": 0.3,
+        "weight": 1.2
+      },
+      "p95_latency_ms": {
+        "direction": "minimize",
+        "baseline": 712.0,
+        "target": 450.0,
+        "weight": 1.0
+      }
+    }
+  },
+  "history": [
+    {
+      "timestamp": "2026-04-28T03:42:29.932166+00:00",
+      "kpis": {
+        "conversion_rate": 0.031,
+        "retention_d7": 0.22,
+        "p95_latency_ms": 712.0
+      },
+      "notes": "baseline"
+    },
+    {
+      "timestamp": "2026-04-28T03:42:33.235163+00:00",
+      "kpis": {
+        "conversion_rate": 0.034,
+        "retention_d7": 0.235,
+        "p95_latency_ms": 680.0
+      },
+      "notes": "iteration-1"
+    },
+    {
+      "timestamp": "2026-04-28T03:48:24.273474+00:00",
+      "kpis": {
+        "conversion_rate": 0.031,
+        "retention_d7": 0.22,
+        "p95_latency_ms": 712.0
+      },
+      "notes": "baseline"
+    },
+    {
+      "timestamp": "2026-04-28T03:48:28.443191+00:00",
+      "kpis": {
+        "conversion_rate": 0.034,
+        "retention_d7": 0.235,
+        "p95_latency_ms": 680.0
+      },
+      "notes": "iteration-1"
+    }
+  ],
+  "updated_at": "2026-04-28T03:48:28.684173+00:00"
+}

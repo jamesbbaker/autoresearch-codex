@@ -1,0 +1,48 @@
+{
+  "generated_at": "2026-04-28T03:48:28.562311+00:00",
+  "focus_kpi": "p95_latency_ms",
+  "focus_score": 230.0,
+  "focus_direction": "minimize",
+  "latest_kpis": {
+    "conversion_rate": 0.034,
+    "retention_d7": 0.235,
+    "p95_latency_ms": 680.0
+  },
+  "deltas": {
+    "conversion_rate": 0.0030000000000000027,
+    "retention_d7": 0.014999999999999986,
+    "p95_latency_ms": -32.0
+  },
+  "subagent_plans": [
+    {
+      "agent": "instrumentation-auditor",
+      "objective": "Increase measurement confidence for p95_latency_ms",
+      "method": [
+        "Validate KPI event pipeline end-to-end.",
+        "Add attribution tests and anomaly checks.",
+        "Publish a KPI decomposition view for diagnosis."
+      ],
+      "deliverable": "PR with telemetry + automated KPI checks"
+    },
+    {
+      "agent": "product-experimenter",
+      "objective": "Design and ship 2 small experiments to minimize p95_latency_ms",
+      "method": [
+        "Choose one funnel bottleneck and define hypotheses.",
+        "Implement a reversible change behind a flag.",
+        "Track guardrails and decision thresholds."
+      ],
+      "deliverable": "Experiment brief + implementation PR"
+    },
+    {
+      "agent": "performance-optimizer",
+      "objective": "Remove latency/reliability blockers affecting top-line KPIs",
+      "method": [
+        "Profile critical path and rank hotspots by user impact.",
+        "Fix one high-leverage bottleneck.",
+        "Measure before/after KPI movement with confidence notes."
+      ],
+      "deliverable": "Performance PR + impact note"
+    }
+  ]
+}
