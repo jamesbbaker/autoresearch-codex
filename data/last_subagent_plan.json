@@ -1,0 +1,46 @@
+{
+  "generated_at": "2026-04-28T03:42:33.350929+00:00",
+  "weakest_kpi": "conversion_rate",
+  "latest_kpis": {
+    "conversion_rate": 0.034,
+    "retention_d7": 0.235,
+    "p95_latency_ms": 680.0
+  },
+  "delta": {
+    "conversion_rate": 0.0030000000000000027,
+    "retention_d7": 0.014999999999999986,
+    "p95_latency_ms": -32.0
+  },
+  "subagent_plans": [
+    {
+      "agent": "instrumentation-auditor",
+      "objective": "Improve signal quality for conversion_rate",
+      "method": [
+        "Audit event coverage, missing joins, and KPI definitions.",
+        "Add tests for metric pipeline consistency.",
+        "Ship observability panel for KPI decomposition."
+      ],
+      "deliverable": "PR with metric definitions + validation checks"
+    },
+    {
+      "agent": "growth-experimenter",
+      "objective": "Design 2 experiments to maximize conversion_rate",
+      "method": [
+        "Generate hypotheses tied to activation funnel stages.",
+        "Implement smallest reversible product change.",
+        "Define guardrails and stop conditions before rollout."
+      ],
+      "deliverable": "Experiment plan + implementation PR"
+    },
+    {
+      "agent": "performance-optimizer",
+      "objective": "Reduce technical friction blocking conversion/retention",
+      "method": [
+        "Profile top user path latency and error rates.",
+        "Target p95 latency + failure hotspots.",
+        "Document before/after KPI impact with confidence notes."
+      ],
+      "deliverable": "Perf PR + KPI impact report"
+    }
+  ]
+}
