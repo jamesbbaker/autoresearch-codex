@@ -1,0 +1,6 @@
+[mcp_servers.kpiAutoresearch]
+command = "python3"
+args = ["mcp_server/server.py"]
+
+[mcp_servers.openaiDeveloperDocs]
+url = "https://developers.openai.com/mcp"

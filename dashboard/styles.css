@@ -1,0 +1,29 @@
+body {
+  font-family: Inter, system-ui, sans-serif;
+  margin: 0;
+  background: #0b1020;
+  color: #e9edf8;
+}
+main {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 24px;
+}
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  margin: 16px 0 28px;
+}
+.card {
+  border: 1px solid #2a3350;
+  border-radius: 12px;
+  padding: 12px;
+  background: #121a31;
+}
+.label { color: #9fb1dd; }
+.value { font-size: 1.4rem; font-weight: 700; }
+.delta-pos { color: #49d17f; }
+.delta-neg { color: #ff7d7d; }
+
+.target { color: #c9d5f5; font-size: 0.9rem; }

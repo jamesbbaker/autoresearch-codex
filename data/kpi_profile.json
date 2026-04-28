@@ -1,0 +1,25 @@
+{
+  "updated_at": "2026-04-28T03:48:24.155101+00:00",
+  "loop_cadence": "daily",
+  "north_star": "Increase qualified trial-to-paid conversion",
+  "kpis": {
+    "conversion_rate": {
+      "direction": "maximize",
+      "baseline": 0.031,
+      "target": 0.055,
+      "weight": 1.5
+    },
+    "retention_d7": {
+      "direction": "maximize",
+      "baseline": 0.22,
+      "target": 0.3,
+      "weight": 1.2
+    },
+    "p95_latency_ms": {
+      "direction": "minimize",
+      "baseline": 712.0,
+      "target": 450.0,
+      "weight": 1.0
+    }
+  }
+}
