@@ -1,18 +1,26 @@
 # Codex plugin/MCP setup notes
 
-This implementation is MCP-first because Codex natively connects to MCP servers in CLI/IDE/web contexts.
+This implementation is now plugin-shaped and MCP-first because Codex natively connects to MCP servers in CLI/IDE/web contexts.
 
-## Why this is closer to a “real plugin” setup
+## Plugin entry point
 
-A practical Codex plugin can be represented as:
-- MCP servers (tooling)
-- skills/subagent instructions
-- app integrations (e.g., Computer Use view loop)
+The intended user entry point is:
 
-This repository now includes all three:
+```text
+@autoresearch start a KPI improvement loop
+```
+
+The `skills/autoresearch/SKILL.md` flow asks only for missing setup values, confirms KPIs and guardrails, collects the requested iteration count, and opens the dashboard when Browser Use or Computer Use is available.
+
+## Included surfaces
+
+- Plugin manifest: `.codex-plugin/plugin.json`
+- MCP server config: `.mcp.json`
 - MCP server: `mcp_server/server.py`
-- subagent playbooks: `subagents/*.md`
-- Computer Use operating prompt in `README.md` and generated `data/iteration_plan.md`
+- Skill instructions: `skills/autoresearch/SKILL.md`
+- Subagent playbooks: `subagents/*.md`
+- Dashboard: `dashboard/index.html`
+- Experiment memory: `data/experiment_memory.json`
 
 ## Computer Use
 
@@ -20,4 +28,5 @@ Computer Use is configured in Codex at runtime by tagging `@Computer Use` in pro
 This repo’s role is to provide:
 - dashboard URL
 - iteration plan
-- MCP tools Codex can call between UI observations and code changes.
+- MCP tools Codex can call between UI observations and code changes
+- durable experiment memory so failed assumptions and user feedback influence later iterations

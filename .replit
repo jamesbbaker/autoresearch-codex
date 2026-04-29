@@ -1,0 +1,9 @@
+run = "python3 mcp_server/server.py --http"
+
+[deployment]
+run = ["python3", "mcp_server/server.py", "--http"]
+deploymentTarget = "autoscale"
+
+[[ports]]
+localPort = 8765
+externalPort = 80

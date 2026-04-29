@@ -51,6 +51,17 @@ def parse_snapshot(items: list[str]) -> dict[str, float]:
     return out
 
 
+def parse_guardrails(items: list[str]) -> dict[str, dict]:
+    out: dict[str, dict] = {}
+    for item in items:
+        parts = item.split(":")
+        if len(parts) < 3:
+            raise ValueError(f"Invalid --guardrail '{item}'. Expected name:direction:threshold")
+        name, direction, threshold = parts[:3]
+        out[name] = {"direction": direction, "threshold": float(threshold)}
+    return out
+
+
 def write_plan(questions: dict, plan: dict, dashboard_url: str) -> None:
     PLAN_PATH.parent.mkdir(parents=True, exist_ok=True)
     text = [
@@ -90,6 +101,8 @@ def main() -> None:
     parser.add_argument("--north-star", required=True)
     parser.add_argument("--kpi", action="append", default=[], help="name:direction:baseline:target[:weight]")
     parser.add_argument("--snapshot", action="append", default=[], help="name=value for current measurement")
+    parser.add_argument("--guardrail", action="append", default=[], help="name:direction:threshold")
+    parser.add_argument("--iterations", type=int, default=3)
     parser.add_argument("--notes", default="")
     parser.add_argument("--dashboard-port", type=int, default=8765)
     parser.add_argument("--open-browser", action="store_true")
@@ -97,13 +110,25 @@ def main() -> None:
 
     profile_kpis = parse_profile(args.kpi)
     snapshot_kpis = parse_snapshot(args.snapshot)
+    guardrails = parse_guardrails(args.guardrail)
 
     questions = call_tool("kpi_interview_questions", {"product_goal": args.north_star})
+    _ = call_tool(
+        "autoresearch_start",
+        {
+            "north_star": args.north_star,
+            "kpis": profile_kpis,
+            "iteration_count": args.iterations,
+            "browser_enabled": bool(args.open_browser),
+        },
+    )
     _ = call_tool(
         "save_kpi_profile",
         {
             "north_star": args.north_star,
             "loop_cadence": "daily",
+            "iteration_count": args.iterations,
+            "guardrails": guardrails,
             "kpis": profile_kpis,
         },
     )

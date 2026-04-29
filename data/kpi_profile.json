@@ -1,7 +1,14 @@
 {
-  "updated_at": "2026-04-28T03:48:24.155101+00:00",
+  "updated_at": "2026-04-29T15:39:53.633552+00:00",
   "loop_cadence": "daily",
   "north_star": "Increase qualified trial-to-paid conversion",
+  "iteration_count": 3,
+  "guardrails": {
+    "error_rate": {
+      "direction": "minimize",
+      "threshold": 0.02
+    }
+  },
   "kpis": {
     "conversion_rate": {
       "direction": "maximize",

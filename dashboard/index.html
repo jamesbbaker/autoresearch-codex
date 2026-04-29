@@ -3,17 +3,103 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>KPI Autoresearch Dashboard</title>
+    <title>Autoresearch</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <main>
-      <h1>KPI Autoresearch Dashboard</h1>
-      <p id="meta"></p>
-      <section id="cards" class="cards"></section>
+    <main class="shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Codex plugin</p>
+          <h1>Autoresearch</h1>
+        </div>
+        <div class="status-pill" id="status">Loading</div>
+      </header>
+
+      <section class="summary-grid">
+        <article class="panel span-2">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">North star</p>
+              <h2 id="northStar">Not configured</h2>
+            </div>
+            <div class="metric-stat">
+              <span id="iterationCount">0</span>
+              <small>iterations</small>
+            </div>
+          </div>
+          <div class="focus-row">
+            <div>
+              <p class="label">Current focus</p>
+              <strong id="focusKpi">Awaiting snapshot</strong>
+            </div>
+            <div>
+              <p class="label">Dashboard</p>
+              <strong id="updatedAt">Never rendered</strong>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel">
+          <p class="eyebrow">Loop health</p>
+          <div id="healthList" class="health-list"></div>
+        </article>
+      </section>
+
       <section>
-        <h2>Trend (latest 50 points)</h2>
-        <canvas id="kpiChart" height="120"></canvas>
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">KPI board</p>
+            <h2>Progress Against Targets</h2>
+          </div>
+        </div>
+        <div id="cards" class="cards"></div>
+      </section>
+
+      <section class="split">
+        <article class="panel">
+          <div class="section-head compact">
+            <div>
+              <p class="eyebrow">Trend</p>
+              <h2>Latest 80 Snapshots</h2>
+            </div>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="kpiChart"></canvas>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="section-head compact">
+            <div>
+              <p class="eyebrow">Guardrails</p>
+              <h2>Regression Watch</h2>
+            </div>
+          </div>
+          <div id="guardrails" class="list"></div>
+        </article>
+      </section>
+
+      <section class="split">
+        <article class="panel">
+          <div class="section-head compact">
+            <div>
+              <p class="eyebrow">Experiment memory</p>
+              <h2>Learnings</h2>
+            </div>
+          </div>
+          <div id="memory" class="timeline"></div>
+        </article>
+
+        <article class="panel">
+          <div class="section-head compact">
+            <div>
+              <p class="eyebrow">Next work</p>
+              <h2>Subagent Briefs</h2>
+            </div>
+          </div>
+          <div id="plans" class="list"></div>
+        </article>
       </section>
     </main>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

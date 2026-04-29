@@ -1,0 +1,38 @@
+[
+  {
+    "timestamp": "2026-04-28T04:28:55.232277+00:00",
+    "iteration": 1,
+    "focus_kpi": "p95_latency_ms",
+    "hypothesis": "Reducing critical-path latency should improve trial conversion",
+    "change": "Ranked p95 latency as the first optimization focus",
+    "outcome": "Latency improved in the snapshot while conversion moved up",
+    "feedback": "Need better attribution between latency and conversion",
+    "shortcoming": "Current snapshot is aggregate-only and lacks segment attribution",
+    "next_bet": "Add segment-level KPI decomposition",
+    "guardrail_notes": "No guardrail regression observed"
+  },
+  {
+    "timestamp": "2026-04-28T04:29:30.725849+00:00",
+    "iteration": 2,
+    "focus_kpi": "p95_latency_ms",
+    "hypothesis": "Segment-level latency work should further improve conversion",
+    "change": "Recorded attribution gap as the next instrumentation task",
+    "outcome": "All primary KPIs moved in the desired direction",
+    "feedback": "Need automated source-of-truth metric collection",
+    "shortcoming": "Manual KPI entry remains a source of lag and error",
+    "next_bet": "Connect the loop to production analytics exports",
+    "guardrail_notes": "Guardrails still need direct snapshot capture"
+  },
+  {
+    "timestamp": "2026-04-29T15:39:53.795888+00:00",
+    "iteration": 3,
+    "focus_kpi": "p95_latency_ms",
+    "hypothesis": "A tighter dashboard and persistent experiment memory should make each loop more actionable.",
+    "change": "Exercised @autoresearch MCP flow end to end as Codex.",
+    "outcome": "Profile, snapshot, plan, memory, and dashboard render all completed.",
+    "feedback": "Next gap is packaging validation against the exact Codex submission process.",
+    "shortcoming": "The plugin still depends on the user enabling browser/plugin surfaces in Codex.",
+    "next_bet": "Add submission assets and marketplace metadata once requirements are final.",
+    "guardrail_notes": "No guardrail regression in smoke-test values."
+  }
+]

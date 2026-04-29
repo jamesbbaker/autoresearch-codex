@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "autoresearch": {
+      "command": "python3",
+      "args": ["mcp_server/server.py"]
+    }
+  }
+}

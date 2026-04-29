@@ -1,0 +1,33 @@
+{
+  "name": "autoresearch",
+  "version": "0.1.0",
+  "description": "Recursive KPI research and improvement loop for Codex.",
+  "author": {
+    "name": "James Baker",
+    "email": "james@example.com",
+    "url": "https://github.com/jamesbbaker"
+  },
+  "homepage": "https://github.com/jamesbbaker/autoresearch-codex",
+  "repository": "https://github.com/jamesbbaker/autoresearch-codex",
+  "license": "MIT",
+  "keywords": ["codex", "mcp", "autoresearch", "kpi", "experiments"],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Autoresearch",
+    "shortDescription": "Run KPI-driven Codex improvement loops.",
+    "longDescription": "Autoresearch asks for your north-star KPI, guardrails, iteration count, and browser preferences, then coordinates MCP tools, a dashboard, and experiment memory so Codex can repeatedly improve a codebase and learn from each cycle.",
+    "developerName": "James Baker",
+    "category": "Productivity",
+    "capabilities": ["Interactive", "Write", "MCP"],
+    "websiteURL": "https://github.com/jamesbbaker/autoresearch-codex",
+    "privacyPolicyURL": "https://github.com/jamesbbaker/autoresearch-codex/blob/main/PRIVACY.md",
+    "termsOfServiceURL": "https://github.com/jamesbbaker/autoresearch-codex/blob/main/TERMS.md",
+    "defaultPrompt": [
+      "@autoresearch start a KPI improvement loop",
+      "@autoresearch run 3 iterations on activation",
+      "@autoresearch review experiment memory"
+    ],
+    "brandColor": "#2563EB"
+  }
+}

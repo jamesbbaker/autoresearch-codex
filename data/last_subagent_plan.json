@@ -1,18 +1,54 @@
 {
-  "generated_at": "2026-04-28T03:48:28.562311+00:00",
+  "generated_at": "2026-04-28T04:29:30.782799+00:00",
   "focus_kpi": "p95_latency_ms",
-  "focus_score": 230.0,
+  "focus_score": 200.0,
   "focus_direction": "minimize",
   "latest_kpis": {
-    "conversion_rate": 0.034,
-    "retention_d7": 0.235,
-    "p95_latency_ms": 680.0
+    "conversion_rate": 0.036,
+    "retention_d7": 0.241,
+    "p95_latency_ms": 650.0
   },
   "deltas": {
-    "conversion_rate": 0.0030000000000000027,
-    "retention_d7": 0.014999999999999986,
-    "p95_latency_ms": -32.0
+    "conversion_rate": 0.001999999999999995,
+    "retention_d7": 0.006000000000000005,
+    "p95_latency_ms": -30.0
   },
+  "guardrails": {
+    "error_rate": {
+      "direction": "minimize",
+      "threshold": 0.02
+    }
+  },
+  "recent_learnings": [
+    {
+      "timestamp": "2026-04-28T04:28:55.232277+00:00",
+      "iteration": 1,
+      "focus_kpi": "p95_latency_ms",
+      "hypothesis": "Reducing critical-path latency should improve trial conversion",
+      "change": "Ranked p95 latency as the first optimization focus",
+      "outcome": "Latency improved in the snapshot while conversion moved up",
+      "feedback": "Need better attribution between latency and conversion",
+      "shortcoming": "Current snapshot is aggregate-only and lacks segment attribution",
+      "next_bet": "Add segment-level KPI decomposition",
+      "guardrail_notes": "No guardrail regression observed"
+    },
+    {
+      "timestamp": "2026-04-28T04:29:30.725849+00:00",
+      "iteration": 2,
+      "focus_kpi": "p95_latency_ms",
+      "hypothesis": "Segment-level latency work should further improve conversion",
+      "change": "Recorded attribution gap as the next instrumentation task",
+      "outcome": "All primary KPIs moved in the desired direction",
+      "feedback": "Need automated source-of-truth metric collection",
+      "shortcoming": "Manual KPI entry remains a source of lag and error",
+      "next_bet": "Connect the loop to production analytics exports",
+      "guardrail_notes": "Guardrails still need direct snapshot capture"
+    }
+  ],
+  "known_shortcomings": [
+    "Current snapshot is aggregate-only and lacks segment attribution",
+    "Manual KPI entry remains a source of lag and error"
+  ],
   "subagent_plans": [
     {
       "agent": "instrumentation-auditor",
