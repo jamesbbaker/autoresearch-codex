@@ -88,5 +88,14 @@
       "p95_latency_ms": 620.0
     },
     "notes": "codex-smoke-test"
+  },
+  {
+    "timestamp": "2026-04-29T17:35:00.820073+00:00",
+    "kpis": {
+      "conversion_rate": 0.038,
+      "retention_d7": 0.247,
+      "p95_latency_ms": 620.0
+    },
+    "notes": "codex-cli-real-use-case-test"
   }
 ]

@@ -1,0 +1,11 @@
+Here is Autoresearch in a real use case, shown in fast forward.
+
+A SaaS team wants to improve qualified trial-to-paid conversion. They start with @autoresearch. The app does not guess. It asks for the missing business decisions: the north-star metric, supporting KPIs, guardrails, browser access, and how many iterations Codex should run.
+
+Once the user confirms the KPI profile, Autoresearch saves the operating model: conversion rate, day-seven retention, p95 latency, and an error-rate guardrail. The loop is now measurable before any experiment starts.
+
+Next, Codex asks Autoresearch for a plan. The MCP server generates subagent briefs for instrumentation, product experimentation, and performance optimization. Each agent has a concrete objective, method, and deliverable.
+
+As experiments run, Autoresearch records results and learns. Latency improves, conversion moves up, and shortcomings like missing segment attribution are remembered instead of being buried in chat history.
+
+The dashboard gives the next cycle a clean starting point: latest KPI movement, recent experiment memory, known gaps, and the next bet. That is the point of Autoresearch: turn Codex into a repeatable KPI improvement system that learns across iterations.
