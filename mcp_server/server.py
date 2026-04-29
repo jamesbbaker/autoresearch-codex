@@ -29,6 +29,7 @@ HISTORY_PATH = DATA_DIR / "kpi_history.json"
 PROFILE_PATH = DATA_DIR / "kpi_profile.json"
 DASHBOARD_DIR = ROOT / "dashboard"
 DASHBOARD_DATA_PATH = DASHBOARD_DIR / "data.json"
+ASSETS_DIR = ROOT / "assets"
 MEMORY_PATH = DATA_DIR / "experiment_memory.json"
 OPENAI_APPS_CHALLENGE_TOKEN = os.environ.get(
     "OPENAI_APPS_CHALLENGE_TOKEN",
@@ -535,6 +536,15 @@ class AutoresearchHttpHandler(BaseHTTPRequestHandler):
                     "tools": [tool["name"] for tool in TOOLS],
                 },
             )
+            return
+
+        if self.path.startswith("/assets/"):
+            rel = unquote(self.path.removeprefix("/assets/"))
+            candidate = (ASSETS_DIR / rel).resolve()
+            if ASSETS_DIR.resolve() not in candidate.parents and candidate != ASSETS_DIR.resolve():
+                self.send_error(403)
+                return
+            self.send_static(candidate)
             return
 
         rel = "index.html" if self.path in {"/", ""} else unquote(self.path.lstrip("/"))
