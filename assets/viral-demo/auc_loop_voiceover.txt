@@ -1,0 +1,17 @@
+This is the Autoresearch loop inside Codex.
+
+The task is not to make a dashboard prettier. The task is to improve a research direction: optimize a hidden holdout AUC for trial-to-paid conversion.
+
+Autoresearch starts by asking the right questions. What KPI matters? What threshold counts as success? How many iterations can it spend?
+
+Then Codex gets a real repo, a public evaluator, and a hidden oracle. The first model is terrible: zero point five eight AUC.
+
+Iteration one makes a big jump, but it still does not clear the full gate. Autoresearch writes down the hypothesis, the code change, the feedback, and the shortcoming.
+
+Each next run uses that memory. One pass improves public AUC but hurts hidden AUC. Another pass passes public but overfits. Another passes hidden but misses public by a hair.
+
+The point is the loop. Autoresearch is not just prompting Codex once. It is running experiments, learning from failures, and pushing the code toward the metric the user actually cares about.
+
+By the fifth iteration, both gates pass. Hidden AUC climbs from zero point five eight to zero point nine three five.
+
+That is the plugin: one at-mention, a few KPI questions, a clean browser or CLI workflow, and a repeatable research loop that remembers what happened before.

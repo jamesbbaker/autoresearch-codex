@@ -1,0 +1,103 @@
+$ codex "@autoresearch Optimize hidden conversion AUC. Ask KPI questions first."
+Autoresearch: What KPI defines success?
+User: Hidden holdout AUC for trial-to-paid conversion.
+Autoresearch: Minimum acceptable improvement?
+User: Beat 0.93 hidden AUC without overfitting public labels.
+Autoresearch: Iteration budget?
+User: Five loops. Remember every failed bet and use the oracle feedback.
+
+$ ./evaluate.py && ./oracle.py
+public_auc=0.5823 target=0.9300
+hidden_auc=0.5818 target=0.9300 iteration=1
+0/2 gates passed
+
+Iteration 1 hypothesis:
+Baseline is using noisy usage and latency terms. Fit a visible-label ranker.
+
+$ codex run --model gpt-5.5 "Improve auc_lab/model.py only. Record hypothesis, change, feedback."
+patched auc_lab/model.py
+added experiments/iteration_1.md
+
+$ ./run_tests.py
+public_auc=0.9152 target=0.9300
+hidden_auc=0.9311 target=0.9300 iteration=2
+1/2 gates passed
+
+Autoresearch memory:
+The first bet generalized to hidden data but missed the public gate.
+Shortcoming: too many low-signal categorical terms; public ranking is unstable.
+Next bet: prune weak terms, keep the durable interactions.
+
+Iteration 2 hypothesis:
+Remove region noise and shrink small coefficients.
+
+$ codex run --model gpt-5.5 "Use previous feedback. Improve robustness, do not inspect hidden labels."
+patched auc_lab/model.py
+added experiments/iteration_2.md
+
+$ ./run_tests.py
+public_auc=0.9247 target=0.9300
+hidden_auc=0.9296 target=0.9300 iteration=3
+0/2 gates passed
+
+Autoresearch memory:
+Public improved, hidden regressed.
+Shortcoming: pruning removed signal tied to enterprise onboarding behavior.
+Next bet: restore admin_invited x team_size and add billing/export interaction.
+
+Iteration 3 hypothesis:
+Enterprise activation is nonlinear. Add interactions, keep coefficient count controlled.
+
+$ codex run --model gpt-5.5 "Try the nonlinear onboarding interactions. Log the result."
+patched auc_lab/model.py
+added experiments/iteration_3.md
+
+$ ./run_tests.py
+public_auc=0.9318 target=0.9300
+hidden_auc=0.9289 target=0.9300 iteration=4
+1/2 gates passed
+
+Autoresearch memory:
+Public passed, hidden still missed.
+Shortcoming: overfit public activation counts.
+Next bet: downweight activation count and favor monotonic product signals.
+
+Iteration 4 hypothesis:
+Stable conversion signal is product depth, not raw activity volume.
+
+$ codex run --model gpt-5.5 "Use the oracle feedback. Reduce public overfit."
+patched auc_lab/model.py
+added experiments/iteration_4.md
+
+$ ./run_tests.py
+public_auc=0.9294 target=0.9300
+hidden_auc=0.9342 target=0.9300 iteration=5
+1/2 gates passed
+
+Autoresearch memory:
+Hidden passed, public slipped by 0.0006.
+Shortcoming: coefficient shrinkage was slightly too aggressive.
+Next bet: restore a small usage_30d term and freeze the rest.
+
+Iteration 5 hypothesis:
+One calibrated usage term can recover public AUC without hurting hidden AUC.
+
+$ codex run --model gpt-5.5 "Final iteration. Make the smallest change that clears both gates."
+patched auc_lab/model.py
+added experiments/iteration_5.md
+
+$ ./run_tests.py
+public_auc=0.9326 target=0.9300
+hidden_auc=0.9354 target=0.9300 iteration=6
+2/2 gates passed
+
+$ git diff --stat
+auc_lab/model.py             | 61 +++++++++++++++++++++++++++++++++++++-------
+experiments/iteration_1.md   | 29 +++++++++++++++++++++
+experiments/iteration_2.md   | 21 +++++++++++++++
+experiments/iteration_3.md   | 23 ++++++++++++++++
+experiments/iteration_4.md   | 24 +++++++++++++++++
+experiments/iteration_5.md   | 18 +++++++++++++
+
+Autoresearch learned across failures, remembered what each experiment broke,
+and ended with a smaller model that improved hidden AUC from 0.5818 to 0.9354.
