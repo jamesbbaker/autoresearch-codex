@@ -1,3 +1,7 @@
 __pycache__/
 *.py[cod]
 .env
+assets/viral-demo/*
+!assets/viral-demo/auc_loop_video_transcript.txt
+!assets/viral-demo/auc_loop_voiceover.txt
+!assets/viral-demo/auc_voiceover.mp3
