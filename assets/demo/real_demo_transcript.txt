@@ -1,0 +1,79 @@
+$ cd sample-saas
+$ ./run_tests.py
+FAIL test_activation_checklist_drives_trial_to_paid_conversion
+FAIL test_dashboard_summary_meets_latency_guardrail
+FAIL test_qualified_trial_score_rewards_conversion_signals
+
+0/3 tests passed
+
+$ curl https://autoresearch-codex.replit.app/mcp -d '{"method":"tools/list"}'
+MCP tools available:
+  autoresearch_start
+  kpi_interview_questions
+  save_kpi_profile
+  update_kpi_snapshot
+  generate_subagent_plan
+  record_experiment_result
+  render_dashboard
+
+$ curl https://autoresearch-codex.replit.app/mcp -d '{"method":"tools/call","name":"autoresearch_start"}'
+Autoresearch loop ready:
+  north_star: Increase qualified trial-to-paid conversion
+  iteration_count: 3
+  guardrails: error_rate <= 0.02
+  instructions: confirm KPIs, run experiments, record feedback and shortcomings
+
+$ codex exec -C sample-saas "Improve the trial funnel so tests pass"
+Codex inspected trial_funnel.py and tests/test_trial_funnel.py.
+Codex found three KPI issues:
+  1. activation checklist did not include conversion-driving actions
+  2. qualified trial score underweighted conversion signals
+  3. dashboard summary had artificial latency sleeps
+
+Codex edited trial_funnel.py.
+
+$ ./run_tests.py
+PASS test_activation_checklist_drives_trial_to_paid_conversion
+PASS test_dashboard_summary_meets_latency_guardrail
+PASS test_qualified_trial_score_rewards_conversion_signals
+
+3/3 tests passed
+
+$ git diff -- trial_funnel.py
+- import time
+-
+- steps = ["create_workspace", "invite_team"]
+- if account.get("has_data"):
+-     steps.append("view_dashboard")
++ steps = []
++ if not account.get("has_data"):
++     steps.append("import_data")
++ if account.get("team_size", 1) < 2:
++     steps.append("invite_teammate")
++ if not account.get("billing_connected"):
++     steps.append("connect_billing")
++ if account.get("reports_created", 0) < 1:
++     steps.append("first_report")
+
+- if account.get("has_data"):
+-     score += 0.10
++ if account.get("has_data"):
++     score += 0.20
++ if account.get("billing_connected"):
++     score += 0.20
++ if account.get("reports_created", 0) > 0:
++     score += 0.15
+
+- for event in events:
+-     time.sleep(0.001)
+-     if event.get("activated"):
+-         activated += 1
++ activated = sum(1 for event in events if event.get("activated"))
++ converted = sum(1 for event in events if event.get("converted"))
+
+$ curl https://autoresearch-codex.replit.app/mcp -d '{"method":"tools/call","name":"record_experiment_result"}'
+Recorded learning:
+  outcome: tests pass and latency guardrail is met
+  feedback: code diff is tied to KPI conversion signals
+  shortcoming: full ChatGPT app invocation depends on review environment
+  next_bet: submit demo and review package
