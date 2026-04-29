@@ -30,6 +30,10 @@ PROFILE_PATH = DATA_DIR / "kpi_profile.json"
 DASHBOARD_DIR = ROOT / "dashboard"
 DASHBOARD_DATA_PATH = DASHBOARD_DIR / "data.json"
 MEMORY_PATH = DATA_DIR / "experiment_memory.json"
+OPENAI_APPS_CHALLENGE_TOKEN = os.environ.get(
+    "OPENAI_APPS_CHALLENGE_TOKEN",
+    "oPPl8CU4K6IclLQv8CL4Hq1P4vn7qcwfjLHYELUdrTE",
+)
 
 
 @dataclass
@@ -327,6 +331,7 @@ TOOLS = [
     {
         "name": "autoresearch_start",
         "description": "Start an Autoresearch loop and return missing setup questions plus dashboard instructions.",
+        "annotations": {"readOnlyHint": True, "openWorldHint": False, "destructiveHint": False},
         "inputSchema": {
             "type": "object",
             "properties": {
@@ -340,11 +345,13 @@ TOOLS = [
     {
         "name": "kpi_interview_questions",
         "description": "Generate KPI discovery questions based on repository context.",
+        "annotations": {"readOnlyHint": True, "openWorldHint": False, "destructiveHint": False},
         "inputSchema": {"type": "object", "properties": {"product_goal": {"type": "string"}, "company_stage": {"type": "string"}}},
     },
     {
         "name": "save_kpi_profile",
         "description": "Persist KPI profile including direction, targets, and weights.",
+        "annotations": {"readOnlyHint": False, "openWorldHint": False, "destructiveHint": False},
         "inputSchema": {
             "type": "object",
             "properties": {
@@ -360,6 +367,7 @@ TOOLS = [
     {
         "name": "update_kpi_snapshot",
         "description": "Append a KPI snapshot to local history storage.",
+        "annotations": {"readOnlyHint": False, "openWorldHint": False, "destructiveHint": False},
         "inputSchema": {
             "type": "object",
             "properties": {
@@ -372,11 +380,13 @@ TOOLS = [
     {
         "name": "generate_subagent_plan",
         "description": "Create methodical subagent plans based on profile + latest KPI state.",
+        "annotations": {"readOnlyHint": True, "openWorldHint": False, "destructiveHint": False},
         "inputSchema": {"type": "object", "properties": {}},
     },
     {
         "name": "record_experiment_result",
         "description": "Persist experiment learnings, feedback, shortcomings, and next bets.",
+        "annotations": {"readOnlyHint": False, "openWorldHint": False, "destructiveHint": False},
         "inputSchema": {
             "type": "object",
             "properties": {
@@ -396,6 +406,7 @@ TOOLS = [
     {
         "name": "render_dashboard",
         "description": "Write dashboard/data.json from profile and KPI history.",
+        "annotations": {"readOnlyHint": False, "openWorldHint": False, "destructiveHint": False},
         "inputSchema": {"type": "object", "properties": {}},
     },
 ]
@@ -503,6 +514,14 @@ class AutoresearchHttpHandler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self) -> None:  # noqa: N802
+        if self.path == "/.well-known/openai-apps-challenge":
+            self.send_response(200)
+            body = OPENAI_APPS_CHALLENGE_TOKEN.encode("utf-8")
+            self.send_header("Content-Type", "text/plain; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
         if self.path == "/health":
             self.send_json(200, {"ok": True, "service": "autoresearch", "tools": [tool["name"] for tool in TOOLS]})
             return
